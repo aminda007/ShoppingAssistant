@@ -1,0 +1,2 @@
+# ShoppingAssistant
+Smart shopping assistant is a mobile application that identifies the customer location within the store and provide guidance and information to the customer to gain a fruitful shopping experience. To acquire customer location, a network of bluetooth beacons installed inside the store at fixed positions will be used. Based on the user details and available products in the store, user will be notified about deals and other inventory details.
