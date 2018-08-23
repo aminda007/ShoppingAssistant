@@ -8,14 +8,19 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.codemo.www.shoppingassistant.APICaller.BeaconList;
+import com.codemo.www.shoppingassistant.APICaller.ItemList;
+import com.codemo.www.shoppingassistant.APICaller.RackList;
 import com.codemo.www.shoppingassistant.BeaconManager.BeaconData;
 import com.codemo.www.shoppingassistant.BeaconManager.BeaconService;
 
@@ -26,6 +31,7 @@ import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
+import org.json.JSONArray;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +39,11 @@ import java.util.HashMap;
 //import org.altbeacon.beacon.service.BeaconService;
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer{
+
+    private JSONArray beacons;
+    private JSONArray racks;
+    private JSONArray items;
+    private String shopId = "1";
 
     private TextView mTextMessage;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
@@ -70,11 +81,32 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+
+
+
+
+    }
+
+    @Override
+    public void onPostCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onPostCreate(savedInstanceState, persistentState);
+
         getPermission();
+        fetchData();
         startBeaconScanningService();
         startLocationUpdatingService();
 
+    }
 
+    public void fetchData(){
+        BeaconList bl = new BeaconList(this);
+        bl.execute(shopId);
+
+        RackList rl = new RackList(this);
+        rl.execute(shopId);
+
+        ItemList il = new ItemList(this);
+        il.execute(shopId);
     }
 
     public void startBeaconScanningService() {
@@ -222,5 +254,29 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     protected void onDestroy() {
         super.onDestroy();
 //        beaconManager.unbind(this);
+    }
+
+    public JSONArray getBeacons() {
+        return beacons;
+    }
+
+    public void setBeacons(JSONArray beacons) {
+        this.beacons = beacons;
+    }
+
+    public JSONArray getRacks() {
+        return racks;
+    }
+
+    public void setRacks(JSONArray racks) {
+        this.racks = racks;
+    }
+
+    public JSONArray getItems() {
+        return items;
+    }
+
+    public void setItems(JSONArray items) {
+        this.items = items;
     }
 }
