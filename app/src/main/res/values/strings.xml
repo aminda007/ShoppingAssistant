@@ -8,7 +8,7 @@
     <string name="rackListAPI">http://167.99.178.10/Projects/shoppingAssistantWeb/web/app_dev.php/api/rack/list</string>
     <string name="beaconListAPI">http://167.99.178.10/Projects/shoppingAssistantWeb/web/app_dev.php/api/beacon/list</string>
     <string name="itemListAPI">http://167.99.178.10/Projects/shoppingAssistantWeb/web/app_dev.php/api/itemdata</string>
-
+    <string name="suggestShop">http://167.99.178.10/Projects/shoppingAssistantWeb/web/app_dev.php/api/shopsuggetion</string>
 
     <string name="NO_INTERNET">NO_INTERNET</string>
 

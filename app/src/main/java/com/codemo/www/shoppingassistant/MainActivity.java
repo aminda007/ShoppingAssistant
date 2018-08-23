@@ -380,4 +380,12 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     public void setItems(JSONArray items) {
         this.items = items;
     }
+
+    public String getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
+    }
 }
