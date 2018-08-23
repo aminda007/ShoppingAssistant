@@ -1,4 +1,4 @@
-package com.codemo.www.shoppingassistant.BeaconManager;
+package com.codemo.www.shoppingassistant;
 
 import android.app.Service;
 import android.content.Intent;
@@ -93,20 +93,18 @@ public class BeaconService extends Service implements BeaconConsumer {
             }
         });
 //
-        final HashMap<Integer,Beacon> beaconsmap=new HashMap<>();
+//        final HashMap<Integer,Beacon> beaconsmap=new HashMap<>();
 
         beaconManager.setRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 for(Beacon beacon : beacons) {
                     Log.d(TAG_BEACON_SCAN, "distance: " + beacon.getDistance() + " id:" + beacon.getId1() + "/" + beacon.getId2() + "/" + beacon.getId3());
-//                    beaconsmap.put(beacon.getId2().toInt(),beacon);
-                    BeaconData.addToHashMap(beacon.getId2().toInt(),beacon);
                     Pointer bcn = new Pointer();
                     bcn.setRadius((float)beacon.getDistance());
                     bcn.setId(Integer.valueOf(beacon.getId2().toString()));
                     MainActivity.updateBeacons(bcn);
-                    Log.d(TAG_BEACON_SCAN+"map","beacons:"+BeaconData.getBeacons().size());
+                    Log.d(TAG_BEACON_SCAN,"beacons:"+beacons.size());
                 }
             }
         });
