@@ -2,6 +2,7 @@ package com.codemo.www.shoppingassistant;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -21,12 +22,16 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class BeaconService extends Service implements BeaconConsumer {
+
+    private static boolean unlock;
+
     public BeaconService() {
     }
 
 
     private BeaconManager beaconManager;
     private static final String TAG_BEACON_SCAN ="Beacon Scanner";
+    private static Runnable handlerTask;
 
 
     @Override
@@ -51,6 +56,20 @@ public class BeaconService extends Service implements BeaconConsumer {
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24"));
 
         beaconManager.bind(this);
+        startTimer();
+    }
+
+    public static void startTimer(){
+        final Handler handler = new Handler();
+        handlerTask = new Runnable()
+        {
+            @Override
+            public void run() {
+                unlock = true;
+                handler.postDelayed(handlerTask, 2000);
+            }
+        };
+        handlerTask.run();
     }
 
     @Override
@@ -99,13 +118,17 @@ public class BeaconService extends Service implements BeaconConsumer {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 for(Beacon beacon : beacons) {
-                    Log.d(TAG_BEACON_SCAN, "distance: " + beacon.getDistance() + " id:" + beacon.getId1() + "/" + beacon.getId2() + "/" + beacon.getId3());
                     Pointer bcn = new Pointer();
                     bcn.setRadius((float)beacon.getDistance());
                     bcn.setId(Integer.valueOf(beacon.getId2().toString()));
-                    MainActivity.updateBeacons(bcn);
-                    Log.d(TAG_BEACON_SCAN,"beacons:"+beacons.size());
+                    if(unlock){
+                        Log.d(TAG_BEACON_SCAN, "distance: " + beacon.getDistance() + " id:" + beacon.getId1() + "/" + beacon.getId2() + "/" + beacon.getId3());
+                        MainActivity.updateBeacons(bcn);
+                        Log.d(TAG_BEACON_SCAN,"beacons:"+beacons.size());
+                    }
+
                 }
+                unlock = false;
             }
         });
 
@@ -120,6 +143,6 @@ public class BeaconService extends Service implements BeaconConsumer {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        beaconManager.unbind(this);
+//        beaconManager.unbind(this);
     }
 }

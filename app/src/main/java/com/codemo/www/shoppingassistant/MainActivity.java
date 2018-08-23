@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
 
     private static String shopName;
     private static boolean beaconFound = false;
+    private static boolean allRadiusFound = false;
     private static ArrayList<Integer> allBeaconFound =  new ArrayList<>();
     public static boolean allDataFetched = false;
     private static BeaconList bl;
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     private static final String TAG = "Main activity";
     private static Notification notify;
     private static ArrayList<Pointer> beaconList = new ArrayList<>();
+    private static ArrayList<Pointer> rackListed = new ArrayList<>();
     private GoogleApiClient mGoogleApiClient;
     private Location mLocation;
     private LocationRequest mLocationRequest;
@@ -162,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         beacon3.setY(6f);
         beacon3.setRadius(8f);
         beacon2.setId(0);
-        map.showBeacons(beacon1, beacon2, beacon3);
+//        map.showBeacons(beacon1, beacon2, beacon3);
 
 
         bl = new BeaconList(this);
@@ -345,11 +347,17 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         if(allBeaconFound.size() < 3){
             for(int i=0; i<3; i++){
                 if (beaconList.get(i).getId() == bcn.getId()){
-                    boolean exist = false;
-                    for(int j=0; i<allBeaconFound.size(); i++){
-                        if(allBeaconFound.get(j) == bcn.getId()){
-//                            return;
-                        }else{
+//                    boolean exist = false;
+                    if(allBeaconFound.size() == 0){
+                        allBeaconFound.add(bcn.getId());
+                    }else{
+                        boolean found = false;
+                        for(int j=0; j<allBeaconFound.size(); j++){
+                            if(allBeaconFound.get(j) == bcn.getId()){
+                                found = true;
+                            }
+                        }
+                        if(!found){
                             allBeaconFound.add(bcn.getId());
                         }
                     }
@@ -365,19 +373,40 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
             }
         }
 
+        if(!allRadiusFound){
+            for(int i=0; i<beaconList.size(); i++){
+                if (beaconList.get(i).getRadius() == 0.0f){
+                    return;
+                }
+            }
+            allRadiusFound = true;
+            map.showBeacons(beaconList.get(0),beaconList.get(1),beaconList.get(2));
+        }
+
         user = new Trilateration().findCenter(beaconList);
+        Log.d(TAG_BEACON_SCAN,"beacons:000000000000000"+user.getX() + ".."+ user.getY());
         map.updateLocation(user);
         Log.d(TAG_BEACON_SCAN+"map","beacons:1111111111111111111111111"+bcn.getRadius() + ".."+ bcn.getId());
-        if(shelfInRange() != -1){
-            notify.showDeals();
+        int index = shelfInRange();
+        if( index != -1){
+            notify.showDeals(rackListed.get(index).getId());
         }
     }
 
     public static int shelfInRange(){
         int min =-1;
-        float shelfRange = 0.5f;
-        for (int i=0; i<beaconList.size(); i++){
-            if(beaconList.get(i).getRadius() < shelfRange){
+//        double min_d = 0.0
+        double shelfRange = 0.5f;
+        for (int i=0; i<rackListed.size(); i++){
+            float xr = rackListed.get(i).getX();
+            float yr = rackListed.get(i).getY();
+            float xu = user.getX();
+            float yu = user.getY();
+            float d1 = Math.abs(yr-yu);
+            float d2 = Math.abs(xr-xu);
+            double d = Math.sqrt(d1*d1 + d2*d2);
+            if( d < shelfRange){
+                shelfRange = d;
                 min = i;
             }
         }
@@ -422,9 +451,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
             beaconList.add(p);
-
         }
     }
 
@@ -434,6 +461,19 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
 
     public void setRacks(JSONArray racks) {
         this.racks = racks;
+        for(int i = 0; i<racks.length(); i++){
+            try {
+                JSONObject jo =  (JSONObject)racks.get(i);
+                Pointer p = new Pointer();
+                p.setId(Integer.valueOf(jo.getString("rackId")));
+                p.setX(Integer.valueOf(jo.getString("xCoord")));
+                p.setY(Integer.valueOf(jo.getString("yCoord")));
+                rackListed.add(p);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        map.showRacks(rackListed.get(0), rackListed.get(1), rackListed.get(2));
     }
 
     public JSONArray getItems() {
