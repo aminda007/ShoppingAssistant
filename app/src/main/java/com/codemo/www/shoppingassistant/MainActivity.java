@@ -3,20 +3,19 @@ package com.codemo.www.shoppingassistant;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -28,13 +27,8 @@ import com.codemo.www.shoppingassistant.APICaller.ItemList;
 import com.codemo.www.shoppingassistant.APICaller.RackList;
 import com.codemo.www.shoppingassistant.APICaller.SuggestShop;
 import com.github.mikephil.charting.charts.ScatterChart;
-
-//import com.codemo.www.shoppingassistant.BeaconManager.BeaconData;
-import com.codemo.www.shoppingassistant.APICaller.BeaconList;
-import com.codemo.www.shoppingassistant.APICaller.ItemList;
-import com.codemo.www.shoppingassistant.APICaller.RackList;
-
-import com.codemo.www.shoppingassistant.BeaconService;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -50,17 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.LatLng;
+//import com.codemo.www.shoppingassistant.BeaconManager.BeaconData;
 
 
 //import org.altbeacon.beacon.service.BeaconService;
@@ -71,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     private JSONArray racks;
     private JSONArray items;
     private static String shopId = "1";
+    private static String shopName;
     private static boolean beaconFound = false;
     private static ArrayList<Integer> allBeaconFound =  new ArrayList<>();
     public static boolean allDataFetched = false;
@@ -80,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     private static SuggestShop sl;
 
     private TextView mTextMessage;
+    private TextView mShopNameTxt;
+//    private Button mResetBtn;
     private ScatterChart chart;
     private static MarketMap map;
     private static Pointer beacon1, beacon2, beacon3, user;
@@ -119,12 +106,14 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         mTextMessage = (TextView) findViewById(R.id.message);
+        mShopNameTxt = (TextView) findViewById(R.id.shopNameTxt);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setVisibility(View.INVISIBLE);
@@ -170,6 +159,13 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
 
 
     }
+
+//    public void onReset(View view){
+//        beaconFound = false;
+//        beaconList.clear();
+//        allBeaconFound.clear();
+//        allDataFetched =false;
+//    }
 
     @Override
     public void onPostCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
@@ -432,5 +428,17 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
 
     public void setShopId(String shopId) {
         this.shopId = shopId;
+    }
+
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
+    }
+
+    public TextView getmShopNameTxt() {
+        return mShopNameTxt;
+    }
+
+    public void setmShopNameTxt(TextView mShopNameTxt) {
+        this.mShopNameTxt = mShopNameTxt;
     }
 }
