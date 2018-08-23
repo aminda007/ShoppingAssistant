@@ -8,8 +8,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -18,6 +20,9 @@ import android.view.View;
 import android.widget.TextView;
 import com.github.mikephil.charting.charts.ScatterChart;
 
+import com.codemo.www.shoppingassistant.APICaller.BeaconList;
+import com.codemo.www.shoppingassistant.APICaller.ItemList;
+import com.codemo.www.shoppingassistant.APICaller.RackList;
 import com.codemo.www.shoppingassistant.BeaconManager.BeaconData;
 import com.codemo.www.shoppingassistant.BeaconManager.BeaconService;
 
@@ -28,6 +33,7 @@ import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
+import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +42,11 @@ import java.util.HashMap;
 //import org.altbeacon.beacon.service.BeaconService;
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer{
+
+    private JSONArray beacons;
+    private JSONArray racks;
+    private JSONArray items;
+    private String shopId = "1";
 
     private TextView mTextMessage;
     private ScatterChart chart;
@@ -109,9 +120,34 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         user = new Trilateration().findCenter(beaconList);
         map.updateLocation(user);
 
+
+
+
+
+    }
+
+    @Override
+    public void onPostCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onPostCreate(savedInstanceState, persistentState);
+
         getPermission();
+        fetchData();
         startBeaconScanningService();
         startLocationUpdatingService();
+
+
+    }
+
+    public void fetchData(){
+        BeaconList bl = new BeaconList(this);
+        bl.execute(shopId);
+
+        RackList rl = new RackList(this);
+        rl.execute(shopId);
+
+        ItemList il = new ItemList(this);
+        il.execute(shopId);
+
     }
 
     public void startBeaconScanningService() {
@@ -278,5 +314,29 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         user = new Trilateration().findCenter(beaconList);
         map.updateLocation(user);
         Log.d(TAG_BEACON_SCAN+"map","beacons:1111111111111111111111111"+bcn.getRadius() + ".."+ bcn.getId());
+    }
+
+    public JSONArray getBeacons() {
+        return beacons;
+    }
+
+    public void setBeacons(JSONArray beacons) {
+        this.beacons = beacons;
+    }
+
+    public JSONArray getRacks() {
+        return racks;
+    }
+
+    public void setRacks(JSONArray racks) {
+        this.racks = racks;
+    }
+
+    public JSONArray getItems() {
+        return items;
+    }
+
+    public void setItems(JSONArray items) {
+        this.items = items;
     }
 }
