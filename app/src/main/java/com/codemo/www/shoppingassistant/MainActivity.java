@@ -16,7 +16,9 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
+import com.github.mikephil.charting.charts.ScatterChart;
 
 import com.codemo.www.shoppingassistant.APICaller.BeaconList;
 import com.codemo.www.shoppingassistant.APICaller.ItemList;
@@ -33,6 +35,7 @@ import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import org.json.JSONArray;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -46,8 +49,12 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     private String shopId = "1";
 
     private TextView mTextMessage;
+    private ScatterChart chart;
+    private static MarketMap map;
+    private static Pointer beacon1, beacon2, beacon3, user;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private static final String TAG ="Main activity";
+    private static ArrayList<Pointer> beaconList = new ArrayList<>();
 
     private BeaconManager beaconManager;
     private static final String TAG_BEACON_SCAN ="Beacon Scanner";
@@ -80,6 +87,38 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        navigation.setVisibility(View.INVISIBLE);
+        // LineChart is initialized from xml
+        chart = (ScatterChart) findViewById(R.id.chart);
+        map = new MarketMap(chart);
+        map.createMap();
+
+        user = new Pointer();
+        user.setX(5f);
+        user.setY(10f);
+        beacon1 = new Pointer();
+        beacon1.setX(0f);
+        beacon1.setY(0f);
+        beacon1.setRadius(8f);
+        beacon1.setId(1);
+        beacon2 = new Pointer();
+        beacon2.setX(3f);
+        beacon2.setY(3f);
+        beacon2.setRadius(5f);
+        beacon2.setId(10035);
+        beacon3 = new Pointer();
+        beacon3.setX(0f);
+        beacon3.setY(6f);
+        beacon3.setRadius(8f);
+        beacon2.setId(0);
+        map.showBeacons(beacon1, beacon2, beacon3);
+
+
+        beaconList.add(beacon1);
+        beaconList.add(beacon2);
+        beaconList.add(beacon3);
+        user = new Trilateration().findCenter(beaconList);
+        map.updateLocation(user);
 
 
 
@@ -96,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         startBeaconScanningService();
         startLocationUpdatingService();
 
+
     }
 
     public void fetchData(){
@@ -107,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
 
         ItemList il = new ItemList(this);
         il.execute(shopId);
+
     }
 
     public void startBeaconScanningService() {
@@ -253,7 +294,26 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        beaconManager.unbind(this);
+        beaconManager.unbind(this);
+    }
+
+    public static void updateBeacons(Pointer bcn) {
+        boolean found = false;
+        int index = 0;
+
+        for(int i=0; i<beaconList.size(); i++){
+            if (beaconList.get(i).getId() == bcn.getId()){
+                beaconList.get(i).setRadius(bcn.getRadius());
+                found = true;
+            }
+        }
+
+        if(!found && beaconList.size()<3){
+            beaconList.add(bcn);
+        }
+        user = new Trilateration().findCenter(beaconList);
+        map.updateLocation(user);
+        Log.d(TAG_BEACON_SCAN+"map","beacons:1111111111111111111111111"+bcn.getRadius() + ".."+ bcn.getId());
     }
 
     public JSONArray getBeacons() {
