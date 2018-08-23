@@ -86,7 +86,7 @@ public class ItemList extends AsyncTask<String,Void,String []> {
         try {
             JSONArray obj = new JSONArray(result[0]);
             context.setItems(obj);
-
+            MainActivity.allDataFetched = true;
         } catch (JSONException e) {
             e.printStackTrace();
         }

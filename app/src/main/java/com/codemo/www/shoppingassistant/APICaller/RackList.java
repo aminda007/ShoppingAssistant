@@ -86,11 +86,11 @@ public class RackList extends AsyncTask<String,Void,String []> {
         try {
             JSONArray obj = new JSONArray(result[0]);
             context.setRacks(obj);
+            context.fetchItemList();
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
 
     }
 

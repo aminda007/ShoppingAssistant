@@ -1,6 +1,7 @@
 package com.codemo.www.shoppingassistant.APICaller;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.codemo.www.shoppingassistant.MainActivity;
 import com.codemo.www.shoppingassistant.R;
@@ -83,9 +84,11 @@ public class BeaconList extends AsyncTask<String,Void,String []> {
     @Override
     protected void onPostExecute(String [] result) {
         super.onPostExecute(result);
+        Log.d("Beacon List", result[0]);
         try {
             JSONArray obj = new JSONArray(result[0]);
             context.setBeacons(obj);
+            context.fetchRackList();
 
         } catch (JSONException e) {
             e.printStackTrace();
