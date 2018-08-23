@@ -88,6 +88,7 @@ public class SuggestShop extends AsyncTask<String,Void,String []> {
             JSONObject shopObj = (JSONObject) obj.get("shop");
             if(shopObj != null){
                 context.setShopId(shopObj.getString("id"));
+                context.fetchBeaconList();
             }
 
         } catch (JSONException e) {

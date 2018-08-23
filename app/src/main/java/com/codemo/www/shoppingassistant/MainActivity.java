@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.codemo.www.shoppingassistant.APICaller.BeaconList;
 import com.codemo.www.shoppingassistant.APICaller.ItemList;
 import com.codemo.www.shoppingassistant.APICaller.RackList;
+import com.codemo.www.shoppingassistant.APICaller.SuggestShop;
 import com.github.mikephil.charting.charts.ScatterChart;
 
 //import com.codemo.www.shoppingassistant.BeaconManager.BeaconData;
@@ -42,6 +43,8 @@ import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +70,14 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     private JSONArray beacons;
     private JSONArray racks;
     private JSONArray items;
-    private String shopId = "1";
+    private static String shopId = "1";
+    private static boolean beaconFound = false;
+    private static ArrayList<Integer> allBeaconFound =  new ArrayList<>();
+    public static boolean allDataFetched = false;
+    private static BeaconList bl;
+    private static RackList rl;
+    private static ItemList il;
+    private static SuggestShop sl;
 
     private TextView mTextMessage;
     private ScatterChart chart;
@@ -144,41 +154,45 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         map.showBeacons(beacon1, beacon2, beacon3);
 
 
-        beaconList.add(beacon1);
-        beaconList.add(beacon2);
-        beaconList.add(beacon3);
+        bl = new BeaconList(this);
+        rl = new RackList(this);
+        il = new ItemList(this);
+        sl = new SuggestShop(this);
 //        user = new Trilateration().findCenter(beaconList);
 //        map.updateLocation(user);
 //        user = new Trilateration().findCenter(beaconList);
 //        map.updateLocation(user);
 
+        getPermission();
 
-
+        startBeaconScanningService();
+        notify = new Notification(this);
 
 
     }
 
     @Override
     public void onPostCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onPostCreate(savedInstanceState, persistentState);
 
-        getPermission();
-        fetchData();
-        startBeaconScanningService();
-        notify = new Notification(this);
+
+
+        super.onPostCreate(savedInstanceState, persistentState);
 
     }
 
-    public void fetchData(){
-        BeaconList bl = new BeaconList(this);
+    public void fetchBeaconList(){
+        Log.d("fetchdata","fetchBeaconList started");
         bl.execute(shopId);
+    }
 
-        RackList rl = new RackList(this);
+    public void fetchRackList(){
+        Log.d("fetchdata","fetchRackList started");
         rl.execute(shopId);
+    }
 
-        ItemList il = new ItemList(this);
+    public void fetchItemList(){
+        Log.d("fetchdata","fetchItemList started");
         il.execute(shopId);
-
     }
 
     public void startBeaconScanningService() {
@@ -303,19 +317,36 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     }
 
     public static void updateBeacons(Pointer bcn) {
-        boolean found = false;
-        int index = 0;
+        if(!beaconFound){
+            beaconFound = true;
+            sl.execute(String.valueOf(bcn.getId()));
+        }
+        if(!allDataFetched){
+            return;
+        }
+        if(allBeaconFound.size() < 3){
+            for(int i=0; i<3; i++){
+                if (beaconList.get(i).getId() == bcn.getId()){
+                    boolean exist = false;
+                    for(int j=0; i<allBeaconFound.size(); i++){
+                        if(allBeaconFound.get(j) == bcn.getId()){
+//                            return;
+                        }else{
+                            allBeaconFound.add(bcn.getId());
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
 
         for(int i=0; i<beaconList.size(); i++){
             if (beaconList.get(i).getId() == bcn.getId()){
                 beaconList.get(i).setRadius(bcn.getRadius());
-                found = true;
             }
         }
 
-        if(!found && beaconList.size()<3){
-            beaconList.add(bcn);
-        }
         user = new Trilateration().findCenter(beaconList);
         map.updateLocation(user);
         Log.d(TAG_BEACON_SCAN+"map","beacons:1111111111111111111111111"+bcn.getRadius() + ".."+ bcn.getId());
@@ -363,6 +394,20 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
 
     public void setBeacons(JSONArray beacons) {
         this.beacons = beacons;
+        for(int i=0; i<3; i++){
+            Pointer p = new Pointer();
+            try {
+                JSONObject jo =  (JSONObject)beacons.get(i);
+                p.setId(Integer.valueOf(jo.getString("uuid")));
+                p.setX(Integer.valueOf(jo.getString("xCoord")));
+                p.setY(Integer.valueOf(jo.getString("yCoord")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            beaconList.add(p);
+
+        }
     }
 
     public JSONArray getRacks() {
