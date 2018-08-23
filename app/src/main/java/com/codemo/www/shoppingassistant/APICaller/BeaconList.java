@@ -35,8 +35,7 @@ public class BeaconList extends AsyncTask<String,Void,String []> {
 
     @Override
     protected String[] doInBackground(String... strings) {
-
-        String a="";
+        
         String login_url;
         try {
 
@@ -96,6 +95,7 @@ public class BeaconList extends AsyncTask<String,Void,String []> {
 
 
     }
+
 
 
     public MainActivity getContext() {
