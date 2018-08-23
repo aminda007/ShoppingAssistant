@@ -71,6 +71,8 @@ public class LocationUpdatingService {
                 distanceFormB1,distanceFormB2,distanceFormB3
         );
 
+
+
         if (!Double.isNaN(currentLocation.getX())){
             pointX=currentLocation.getX();
             pointY=currentLocation.getY();
@@ -110,7 +112,7 @@ public class LocationUpdatingService {
 
 
     public void startTimer(){
-        timer.schedule(timerTask,delay,period);
+        timer.schedule(timerTask,0,period);
     }
 
     public void stopTimerTask() {
