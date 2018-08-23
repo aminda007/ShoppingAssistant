@@ -6,6 +6,9 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.codemo.www.shoppingassistant.MainActivity;
+import com.codemo.www.shoppingassistant.Pointer;
+
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
@@ -99,6 +102,10 @@ public class BeaconService extends Service implements BeaconConsumer {
                     Log.d(TAG_BEACON_SCAN, "distance: " + beacon.getDistance() + " id:" + beacon.getId1() + "/" + beacon.getId2() + "/" + beacon.getId3());
 //                    beaconsmap.put(beacon.getId2().toInt(),beacon);
                     BeaconData.addToHashMap(beacon.getId2().toInt(),beacon);
+                    Pointer bcn = new Pointer();
+                    bcn.setRadius((float)beacon.getDistance());
+                    bcn.setId(Integer.valueOf(beacon.getId2().toString()));
+                    MainActivity.updateBeacons(bcn);
                     Log.d(TAG_BEACON_SCAN+"map","beacons:"+BeaconData.getBeacons().size());
                 }
             }
